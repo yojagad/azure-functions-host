@@ -36,17 +36,6 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Http
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _httpWorkerOptions = httpWorkerOptions.Value ?? throw new ArgumentNullException(nameof(httpWorkerOptions.Value));
             _enableRequestTracing = environment.IsCoreTools();
-            if (scriptHostOptions.Value.FunctionTimeout == null)
-            {
-                _logger.JobHostFunctionTimeoutNotSet();
-                // Default to MaxValue if FunctionTimeout is not set in host.json or is set to -1.
-                _httpClient.Timeout = TimeSpan.FromMilliseconds(int.MaxValue);
-            }
-            else
-            {
-                // Set 1 minute greater than FunctionTimeout to ensure invoction failure due to timeout is raised before httpClient raises operation cancelled exception
-                _httpClient.Timeout = scriptHostOptions.Value.FunctionTimeout.Value.Add(TimeSpan.FromMinutes(1));
-            }
         }
 
         public Task InvokeAsync(ScriptInvocationContext scriptInvocationContext)
