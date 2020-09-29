@@ -29,12 +29,27 @@ jobs:
       azureSubscription: 'Azure-Functions-Host-CI'
       keyVaultName: 'azure-functions-host-ci'
       secretsFilter: '*'
+     
   - task: PowerShell@2
-    displayName: 'Initialize'
-    name: Initialize
+    displayName: "Build artifacts"
     inputs:
-      filePath: '$(Build.Repository.LocalPath)\build\initialize-pipeline.ps1'
-      arguments: '-connectionString ''$(Storage-azurefunctionshostci0)'''
+      filePath: '$(Build.Repository.LocalPath)\build\build-extensions.ps1'
+      arguments: '-buildNumber "$(buildNumber)" -suffix "$(suffix)" -commitHash "$(Build.SourceVersion)"'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(Build.Repository.LocalPath)\buildoutput'
+      Contents: '*.zip'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: DotNetCoreCLI@2
+    displayName: 'Build host packages'
+    inputs:
+      command: 'custom'
+      custom: 'pack'
+      arguments: -o packages -p:BuildNumber=$(buildNumber) -p:CommitHash=$(Build.SourceVersion) -c Release $(packSuffixSwitch)
+      projects: |
+        **\WebJobs.Script.csproj
+        **\WebJobs.Script.WebHost.csproj
+        **\WebJobs.Script.Grpc.csproj
 
   - pwsh: |
       $rootDirectory = $(Build.Repository.LocalPath)
