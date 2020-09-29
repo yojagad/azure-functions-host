@@ -29,7 +29,34 @@ jobs:
       azureSubscription: 'Azure-Functions-Host-CI'
       keyVaultName: 'azure-functions-host-ci'
       secretsFilter: '*'
-     
+   
+  - task: PowerShell@2
+    displayName: 'Initialize'
+    name: Initialize
+    inputs:
+      filePath: '$(Build.Repository.LocalPath)\build\initialize-pipeline.ps1'
+      arguments: '-connectionString ''$(Storage-azurefunctionshostci0)'''
+
+- job: BuildArtifacts
+  dependsOn: InitializePipeline
+  condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), eq(dependencies.InitializePipeline.outputs['Initialize.BuildArtifacts'], true)))
+  variables:
+    ${{ if or( eq( variables['Build.Reason'], 'PullRequest' ), not( endswith( variables['Build.SourceBranch'], 'release/3.0' ) ) ) }}:
+      suffixTemp: ci
+      packSuffixSwitchTemp: --version-suffix ci
+      emgSuffixSwitchTemp: --version-suffix ci$(buildNumber)
+      artifactSuffix: -ci
+    suffix: $[variables.suffixTemp] # this resolves to an empty string if it is missing
+    packSuffixSwitch: $[variables.packSuffixSwitchTemp]
+    emgSuffixSwitch: $[variables.emgSuffixSwitchTemp]
+  pool:
+    vmImage: 'windows-2019' 
+  steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.1.x'
+      performMultiLevelLookup: true  
   - task: PowerShell@2
     displayName: "Build artifacts"
     inputs:
