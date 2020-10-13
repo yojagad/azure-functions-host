@@ -130,6 +130,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             _metricsEventManager.QueuedEvents[initialEvent.EventName] = initialEvent;
             Assert.Equal(1, _metricsEventManager.QueuedEvents.Count);
 
+            string key = MetricsEventManager.GetAggregateKey("Event1");
             for (int i = 0; i < 10; i++)
             {
                 _metricsLogger.LogEvent("Event1");
@@ -137,7 +138,8 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 Assert.Equal(1, _metricsEventManager.QueuedEvents.Count);
 
                 // verify the new event was aggregated into the existing
-                Assert.Equal(2 + i, initialEvent.Count);
+                var currEvent = _metricsEventManager.QueuedEvents[key];
+                Assert.Equal(2 + i, currEvent.Count);
             }
 
             Assert.Equal(1, _metricsEventManager.QueuedEvents.Count);
@@ -243,6 +245,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             _metricsEventManager.QueuedEvents[initialEvent.EventName] = initialEvent;
             Assert.Equal(1, _metricsEventManager.QueuedEvents.Count);
 
+            string key = MetricsEventManager.GetAggregateKey("Event1");
             for (int i = 0; i < 10; i++)
             {
                 SystemMetricEvent latencyEvent = (SystemMetricEvent)_metricsLogger.BeginEvent("Event1");
@@ -252,13 +255,14 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 Assert.Equal(1, _metricsEventManager.QueuedEvents.Count);
 
                 // verify the new event was aggregated into the existing
-                Assert.Equal(2 + i, initialEvent.Count);
+                var currentEvent = _metricsEventManager.QueuedEvents[key];
+                Assert.Equal(2 + i, currentEvent.Count);
                 long latencyMS = (long)latencyEvent.Duration.TotalMilliseconds;
-                Assert.Equal(initialEvent.Average, prevAvg + latencyMS);
-                Assert.Equal(initialEvent.Minimum, Math.Min(prevMin, latencyMS));
-                Assert.Equal(initialEvent.Maximum, Math.Max(prevMax, latencyMS));
-                prevMin = initialEvent.Minimum;
-                prevMax = initialEvent.Maximum;
+                Assert.Equal(currentEvent.Average, prevAvg + latencyMS);
+                Assert.Equal(currentEvent.Minimum, Math.Min(prevMin, latencyMS));
+                Assert.Equal(currentEvent.Maximum, Math.Max(prevMax, latencyMS));
+                prevMin = currentEvent.Minimum;
+                prevMax = currentEvent.Maximum;
                 prevAvg += latencyMS;
             }
 

@@ -80,10 +80,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics
             SystemMetricEvent evt = eventHandle as SystemMetricEvent;
             if (evt != null)
             {
-                long latencyMS = 0;
-                evt.StopWatch.Stop();
+                long latencyMS;
                 if (evt.StopWatch != null)
                 {
+                    evt.StopWatch.Stop();
                     evt.Duration = evt.StopWatch.Elapsed;
                     latencyMS = evt.StopWatch.ElapsedMilliseconds;
                 }
@@ -114,17 +114,19 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics
                             Data = evt.Data
                         };
                     },
-                    (name, evtToUpdate) =>
+                    (name, existing) =>
                     {
-                        // Aggregate into the existing event
-                        // While we'll be performing an aggregation later,
-                        // we retain the count so weighted averages can be performed
-                        evtToUpdate.Maximum = Math.Max(evtToUpdate.Maximum, latencyMS);
-                        evtToUpdate.Minimum = Math.Min(evtToUpdate.Minimum, latencyMS);
-                        evtToUpdate.Average += latencyMS;  // the average is calculated later - for now we sum
-                        evtToUpdate.Count++;
-
-                        return evtToUpdate;
+                        return new SystemMetricEvent
+                        {
+                            FunctionName = existing.FunctionName,
+                            EventName = existing.EventName,
+                            Timestamp = existing.Timestamp,
+                            Maximum = Math.Max(existing.Maximum, latencyMS),
+                            Minimum = Math.Min(existing.Minimum, latencyMS),
+                            Average = existing.Average + latencyMS,
+                            Count = existing.Count + 1,
+                            Data = existing.Data
+                        };
                     });
             }
         }
@@ -150,12 +152,15 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics
                         Data = data
                     };
                 },
-                (name, evtToUpdate) =>
+                (name, existing) =>
                 {
-                    // update the existing event
-                    evtToUpdate.Count++;
-
-                    return evtToUpdate;
+                    return new SystemMetricEvent
+                    {
+                        FunctionName = existing.FunctionName,
+                        EventName = existing.EventName,
+                        Data = existing.Data,
+                        Count = existing.Count + 1
+                    };
                 });
         }
 
@@ -231,13 +236,19 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics
 
         private void FlushMetrics()
         {
-            if (QueuedEvents.Count == 0)
+            if (QueuedEvents.IsEmpty)
             {
                 return;
             }
 
-            SystemMetricEvent[] eventsToFlush = QueuedEvents.Values.ToArray();
-            QueuedEvents.Clear();
+            string[] keys = QueuedEvents.Keys.ToArray();
+            SystemMetricEvent[] eventsToFlush = new SystemMetricEvent[keys.Length];
+
+            for (var i = 0; i < keys.Length; i++)
+            {
+                // atomically get&remove
+                QueuedEvents.TryRemove(keys[i], out eventsToFlush[i]);
+            }
 
             // Use the same timestamp for all events. Since these are
             // aggregated events, individual timestamps for when the events were
