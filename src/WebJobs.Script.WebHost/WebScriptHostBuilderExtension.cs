@@ -67,11 +67,11 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                 {
                     loggingBuilder.Services.AddSingleton<ILoggerFactory, ScriptLoggerFactory>();
 
-                    loggingBuilder.AddWebJobsSystem<SystemLoggerProvider>();
-                    if (environment.IsAzureMonitorEnabled())
-                    {
-                        loggingBuilder.Services.AddSingleton<ILoggerProvider, AzureMonitorDiagnosticLoggerProvider>();
-                    }
+                    //loggingBuilder.AddWebJobsSystem<SystemLoggerProvider>();
+                    //if (environment.IsAzureMonitorEnabled())
+                    //{
+                    //    loggingBuilder.Services.AddSingleton<ILoggerProvider, AzureMonitorDiagnosticLoggerProvider>();
+                    //}
 
                     ConfigureRegisteredBuilders(loggingBuilder, rootServiceProvider);
                 })
@@ -127,8 +127,8 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                     services.AddSingleton<IDelegatingHandlerProvider, DefaultDelegatingHandlerProvider>();
 
                     // Logging and diagnostics
-                    services.AddSingleton<IMetricsLogger>(a => new NonDisposableMetricsLogger(metricsLogger));
-                    services.AddSingleton<IEventCollectorProvider, FunctionInstanceLogCollectorProvider>();
+                    services.AddSingleton<IMetricsLogger, MetricsLogger>();
+                    //services.AddSingleton<IEventCollectorProvider, FunctionInstanceLogCollectorProvider>();
 
                     // Hosted services
                     services.AddSingleton<IFileMonitoringService, FileMonitoringService>();

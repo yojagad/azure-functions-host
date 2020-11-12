@@ -83,6 +83,11 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Middleware
                 return new NotFoundResult();
             }
 
+            if (!functionExecution.Descriptor.Metadata.IsProxy())
+            {
+                return new OkResult();
+            }
+
             if (context.Request.IsColdStart() && !context.Items.ContainsKey(ScriptConstants.AzureFunctionsColdStartKey))
             {
                 // for cold start requests we want to measure the request

@@ -122,7 +122,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             services.AddTransient<VirtualFileSystemMiddleware>();
 
             // Logging and diagnostics
-            services.AddSingleton<IMetricsLogger, WebHostMetricsLogger>();
+            services.AddSingleton<IMetricsLogger, MetricsLogger>();
 
             // Secret management
             services.TryAddSingleton<ISecretManagerProvider, DefaultSecretManagerProvider>();
