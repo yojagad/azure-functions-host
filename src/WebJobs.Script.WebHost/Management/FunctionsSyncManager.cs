@@ -103,13 +103,14 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
             try
             {
                 await _syncSemaphore.WaitAsync();
-
+                _logger.LogDebug("Calling synctriggers");
                 var hashBlob = await GetHashBlobAsync();
                 if (isBackgroundSync && hashBlob == null)
                 {
                     // short circuit before doing any work in background sync
                     // cases where we need to check/update hash but don't have
                     // storage access
+                    _logger.LogInformation("Cancelling background sync trigger");
                     return result;
                 }
 

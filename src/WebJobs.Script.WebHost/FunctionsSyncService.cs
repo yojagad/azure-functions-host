@@ -76,6 +76,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                     _logger.LogDebug("Initiating background SyncTriggers operation");
                     await _functionsSyncManager.TrySyncTriggersAsync(isBackgroundSync: true);
                 }
+                else
+                {
+                    _logger.LogInformation("Not initiating background synctrigger.");
+                }
             }
             catch (Exception exc) when (!exc.IsFatal())
             {
