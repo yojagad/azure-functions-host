@@ -81,7 +81,12 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
                     if (FunctionsSyncManager.IsSyncTriggersEnvironment(webHostEnvironment, environment))
                     {
+                        Console.WriteLine("Adding functionssyncservice");
                         services.AddSingleton<IHostedService, FunctionsSyncService>();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Not adding syncservice");
                     }
 
                     if (!environment.IsV2CompatibilityMode())

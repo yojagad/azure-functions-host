@@ -75,6 +75,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
             _environment = environment;
             _hostNameProvider = hostNameProvider;
             _functionMetadataManager = functionMetadataManager;
+            Console.WriteLine("Added syncmanager");
         }
 
         internal bool ArmCacheEnabled
