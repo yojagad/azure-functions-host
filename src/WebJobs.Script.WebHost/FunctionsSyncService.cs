@@ -74,7 +74,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             {
                 var cancellationToken = (CancellationToken)state;
 
-                if (!cancellationToken.IsCancellationRequested && ShouldSyncTriggers)
+                if (!cancellationToken.IsCancellationRequested)
                 {
                     _logger.LogDebug("Initiating background SyncTriggers operation");
                     await _functionsSyncManager.TrySyncTriggersAsync(isBackgroundSync: true);
