@@ -165,6 +165,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
         {
             if (environment.IsCoreTools())
             {
+                Console.WriteLine("coretools....not synctriggers");
                 // don't sync triggers when running locally or not running in a cloud
                 // hosted environment
                 return false;
@@ -172,6 +173,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
 
             if (environment.GetEnvironmentVariable(EnvironmentSettingNames.WebSiteAuthEncryptionKey) == null)
             {
+                Console.WriteLine("auth encryption key is null. not synctriggers");
                 // We don't have the encryption key required for SetTriggers,
                 // so sync calls would fail auth anyways.
                 // This might happen in when running locally for example.
@@ -180,6 +182,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
 
             if (webHostEnvironment.InStandbyMode)
             {
+                Console.WriteLine("in standby mode. not synctriggers");
                 // don’t sync triggers when in standby mode
                 return false;
             }
@@ -189,6 +192,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
             if ((environment.IsWindowsAzureManagedHosting() || environment.IsLinuxConsumption()) &&
                 !environment.IsContainerReady())
             {
+                Console.WriteLine("container not ready. notsynctriggers");
                 // container ready flag not set yet – site not fully specialized/initialized
                 return false;
             }
