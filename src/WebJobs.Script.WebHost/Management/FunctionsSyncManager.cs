@@ -87,6 +87,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Management
 
         public async Task<SyncTriggersResult> TrySyncTriggersAsync(bool isBackgroundSync = false)
         {
+            Console.WriteLine("trying synctriggers async");
             var result = new SyncTriggersResult
             {
                 Success = true

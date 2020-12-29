@@ -35,6 +35,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             _primaryHostStateProvider = primaryHostStateProvider;
             _functionsSyncManager = functionsSyncManager;
             _logger = loggerFactory.CreateLogger(ScriptConstants.LogCategoryHostGeneral);
+            Console.WriteLine("creating functionsyncservice for synctriggers");
         }
 
         // exposed for testing
@@ -51,6 +52,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("starting background synctriggers timer");
             // create a onetime invocation timer
             _syncTimer = new Timer(OnSyncTimerTick, cancellationToken, DueTime, Timeout.Infinite);
 
@@ -59,6 +61,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("stopping background synctriggers timer");
             // cancel the timer if it has been started
             _syncTimer?.Change(Timeout.Infinite, Timeout.Infinite);
 
