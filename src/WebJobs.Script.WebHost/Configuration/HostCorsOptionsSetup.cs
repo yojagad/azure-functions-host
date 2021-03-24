@@ -18,7 +18,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _configuration = configuration;
         }
 
-        public void Configure(HostCorsOptions options)
+        public void ConfigureAsync(HostCorsOptions options)
         {
             var allowedOriginsString = _configuration.GetValue<string>(EnvironmentSettingNames.CorsAllowedOrigins);
 

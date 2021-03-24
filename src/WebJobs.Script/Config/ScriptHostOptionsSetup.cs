@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             _applicationHostOptions = applicationHostOptions;
         }
 
-        public void Configure(ScriptJobHostOptions options)
+        public async Task ConfigureAsync(ScriptJobHostOptions options)
         {
             // Add the standard built in watched directories set to any the user may have specified
             options.WatchDirectories.Add("node_modules");
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
             // If we have a read only file system, override any configuration and
             // disable file watching
-            if (_environment.IsFileSystemReadOnly())
+            if (await _environment.IsFileSystemReadOnlyAsync())
             {
                 options.FileWatchingEnabled = false;
             }

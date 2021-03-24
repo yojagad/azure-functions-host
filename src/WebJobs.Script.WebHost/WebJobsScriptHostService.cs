@@ -139,7 +139,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            CheckFileSystem();
+            await CheckFileSystemAsync();
             if (ShutdownRequested)
             {
                 return;
@@ -166,10 +166,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             }
         }
 
-        private void CheckFileSystem()
+        private async Task CheckFileSystemAsync()
         {
             // Shutdown if RunFromZipFailed
-            if (_environment.IsZipDeployment(validate: false))
+            if (await _environment.IsZipDeploymentAsync(validate: false))
             {
                 string path = Path.Combine(_applicationHostOptions.CurrentValue.ScriptPath, ScriptConstants.RunFromPackageFailedFileName);
                 if (File.Exists(path))

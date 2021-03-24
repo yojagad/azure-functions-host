@@ -15,7 +15,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public void Configure(StandbyOptions options)
+        public void ConfigureAsync(StandbyOptions options)
         {
             options.InStandbyMode = _environment.IsPlaceholderModeEnabled();
         }

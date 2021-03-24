@@ -20,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _env = env;
         }
 
-        public void Configure(HostEasyAuthOptions options)
+        public void ConfigureAsync(HostEasyAuthOptions options)
         {
             options.SiteAuthEnabled = IsSiteAuthEnabled();
             options.SiteAuthClientId = _env.GetEnvironmentVariable(EnvironmentSettingNames.EasyAuthClientId);

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             _environment = environment;
         }
 
-        public void Configure(ApplicationInsightsLoggerOptions options)
+        public void ConfigureAsync(ApplicationInsightsLoggerOptions options)
         {
             // Initialize sampling with a non-default MaxTelemetryItemsPerSecond. This will
             // be removed if sampling is disabled.

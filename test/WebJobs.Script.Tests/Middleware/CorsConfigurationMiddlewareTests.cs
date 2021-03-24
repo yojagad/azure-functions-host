@@ -229,7 +229,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Middleware
                 _options = options;
             }
 
-            public void Configure(HostCorsOptions options)
+            public void ConfigureAsync(HostCorsOptions options)
             {
                 options.AllowedOrigins = _options.AllowedOrigins;
                 options.SupportCredentials = _options.SupportCredentials;

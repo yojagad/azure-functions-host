@@ -157,7 +157,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
         [InlineData("functionapp.zip", false)]
         [InlineData("0", false)]
         [InlineData("", false)]
-        public void IsZipDeployment_CorrectlyValidatesSetting(string appSettingValue, bool expectedOutcome)
+        public async System.Threading.Tasks.Task IsZipDeployment_CorrectlyValidatesSettingAsync(string appSettingValue, bool expectedOutcome)
         {
             var zipSettings = new string[]
             {
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 var environment = new TestEnvironment();
                 environment.SetEnvironmentVariable(setting, appSettingValue);
-                Assert.Equal(environment.IsZipDeployment(), expectedOutcome);
+                Assert.Equal(await environment.IsZipDeploymentAsync(), expectedOutcome);
             }
 
             // Test multiple being set
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 allSettingsEnvironment.SetEnvironmentVariable(setting, appSettingValue);
             }
 
-            Assert.Equal(allSettingsEnvironment.IsZipDeployment(), expectedOutcome);
+            Assert.Equal(await allSettingsEnvironment.IsZipDeploymentAsync(), expectedOutcome);
         }
 
         [Theory]

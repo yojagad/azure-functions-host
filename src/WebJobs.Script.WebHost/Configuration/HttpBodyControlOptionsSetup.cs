@@ -15,7 +15,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _environment = environment;
         }
 
-        public void Configure(HttpBodyControlOptions options)
+        public void ConfigureAsync(HttpBodyControlOptions options)
         {
             options.AllowSynchronousIO = _environment.IsV2CompatibilityMode()
                 || FeatureFlags.IsEnabled(ScriptConstants.FeatureFlagAllowSynchronousIO, _environment);

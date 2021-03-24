@@ -111,7 +111,7 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Rpc
 
             if (_workerRuntime != null && rpcWorkerChannel != null)
             {
-                if (UsePlaceholderChannel(_workerRuntime))
+                if (await UsePlaceholderChannelAsync(_workerRuntime))
                 {
                     _logger.LogDebug("Loading environment variables for runtime: {runtime}", _workerRuntime);
                     await rpcWorkerChannel.SendFunctionEnvironmentReloadRequest();
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Rpc
             _logger.LogDebug("Completed language worker channel specialization");
         }
 
-        private bool UsePlaceholderChannel(string workerRuntime)
+        private async Task<bool> UsePlaceholderChannelAsync(string workerRuntime)
         {
             if (!string.IsNullOrEmpty(workerRuntime))
             {
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Rpc
                     || string.Equals(workerRuntime, RpcWorkerConstants.PowerShellLanguageWorkerName, StringComparison.OrdinalIgnoreCase))
                 {
                     // Use if readonly and not v2 compatible on ~3 extension
-                    return _environment.IsFileSystemReadOnly() && !_environment.IsV2CompatibileOnV3Extension();
+                    return await _environment.IsFileSystemReadOnlyAsync() && !_environment.IsV2CompatibileOnV3Extension();
                 }
                 return true;
             }

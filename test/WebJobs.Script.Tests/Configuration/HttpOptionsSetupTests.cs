@@ -22,7 +22,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             var setup = new HttpOptionsSetup(mockEnvironment.Object);
             var options = new HttpOptions();
-            setup.Configure(options);
+            setup.ConfigureAsync(options);
 
             Assert.True(options.DynamicThrottlesEnabled);
             Assert.Equal(HttpOptionsSetup.DefaultMaxConcurrentRequests, options.MaxConcurrentRequests);
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             var setup = new HttpOptionsSetup(mockEnvironment.Object);
             var options = new HttpOptions();
-            setup.Configure(options);
+            setup.ConfigureAsync(options);
 
             Assert.False(options.DynamicThrottlesEnabled);
             Assert.Equal(HttpOptionsSetup.DefaultMaxConcurrentRequests, options.MaxConcurrentRequests);
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             var setup = new HttpOptionsSetup(mockEnvironment.Object);
             var options = new HttpOptions();
-            setup.Configure(options);
+            setup.ConfigureAsync(options);
 
             Assert.False(options.DynamicThrottlesEnabled);
             Assert.Equal(DataflowBlockOptions.Unbounded, options.MaxConcurrentRequests);

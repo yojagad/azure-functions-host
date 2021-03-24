@@ -16,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             _scriptJobHostOptions = scriptJobHostOptions ?? throw new ArgumentNullException(nameof(scriptJobHostOptions));
         }
 
-        public void Configure(JobHostFunctionTimeoutOptions options)
+        public void ConfigureAsync(JobHostFunctionTimeoutOptions options)
         {
             var scriptHostOptions = _scriptJobHostOptions.Value;
 

@@ -270,7 +270,7 @@ namespace Microsoft.Azure.WebJobs.Script
             _stopwatch.Start();
             using (_metricsLogger.LatencyEvent(MetricEventNames.HostStartupLatency))
             {
-                PreInitialize();
+                await PreInitializeAsync();
                 HostInitializing?.Invoke(this, EventArgs.Empty);
 
                 // Generate Functions
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.WebJobs.Script
         /// <summary>
         /// Perform any early initialization operations.
         /// </summary>
-        private void PreInitialize()
+        private async Task PreInitializeAsync()
         {
             // Validate extension configuration
             if (_environment.IsRunningAsHostedSiteExtension())
@@ -426,20 +426,20 @@ namespace Microsoft.Azure.WebJobs.Script
                 _metricsLogger.LogEvent(MetricEventNames.ApplicationInsightsDisabled);
             }
 
-            InitializeFileSystem();
+            await InitializeFileSystemAsync();
         }
 
         /// <summary>
         /// Set up any required directories or files.
         /// </summary>
-        private void InitializeFileSystem()
+        private async Task InitializeFileSystemAsync()
         {
             if (_fileLoggingStatusManager.IsFileLoggingEnabled)
             {
                 FileUtility.EnsureDirectoryExists(_hostLogPath);
             }
 
-            if (!_environment.IsFileSystemReadOnly())
+            if (!await _environment.IsFileSystemReadOnlyAsync())
             {
                 FileUtility.EnsureDirectoryExists(ScriptOptions.RootScriptPath);
             }

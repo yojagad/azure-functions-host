@@ -29,7 +29,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _standbyOptionsOnChangeSubscription = _standbyOptions.OnChange(o => _cache.Clear());
         }
 
-        public void Configure(ScriptApplicationHostOptions options)
+        public void ConfigureAsync(ScriptApplicationHostOptions options)
         {
             Configure(null, options);
         }

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Azure.WebJobs.Script.Diagnostics;
 using Microsoft.Azure.WebJobs.Script.Diagnostics.Extensions;
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
             public override void Load()
             {
-                JObject hostJson = LoadHostConfigurationFile();
+                JObject hostJson = await LoadHostConfigurationFileAsync();
                 ProcessObject(hostJson);
             }
 
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             /// <summary>
             /// Read and apply host.json configuration.
             /// </summary>
-            private JObject LoadHostConfigurationFile()
+            private async Task<JObject> LoadHostConfigurationFileAsync()
             {
                 using (_metricsLogger.LatencyEvent(MetricEventNames.LoadHostConfigurationSource))
                 {
@@ -143,8 +144,8 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
                     ScriptApplicationHostOptions options = _configurationSource.HostOptions;
                     string hostFilePath = Path.Combine(options.ScriptPath, ScriptConstants.HostMetadataFileName);
-                    JObject hostConfigObject = LoadHostConfig(hostFilePath);
-                    hostConfigObject = InitializeHostConfig(hostFilePath, hostConfigObject);
+                    JObject hostConfigObject = await LoadHostConfigAsync(hostFilePath);
+                    hostConfigObject = await InitializeHostConfigAsync(hostFilePath, hostConfigObject);
                     string sanitizedJson = SanitizeHostJson(hostConfigObject);
 
                     _logger.HostConfigApplied();
@@ -157,7 +158,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                 }
             }
 
-            private JObject InitializeHostConfig(string hostJsonPath, JObject hostConfigObject)
+            private async Task<JObject> InitializeHostConfigAsync(string hostJsonPath, JObject hostConfigObject)
             {
                 using (_metricsLogger.LatencyEvent(MetricEventNames.InitializeHostConfiguration))
                 {
@@ -166,8 +167,8 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                     {
                         _logger.HostConfigEmpty();
 
-                        hostConfigObject = GetDefaultHostConfigObject();
-                        TryWriteHostJson(hostJsonPath, hostConfigObject);
+                        hostConfigObject = await GetDefaultHostConfigObjectAsync();
+                        await TryWriteHostJsonAsync(hostJsonPath, hostConfigObject);
                     }
 
                     string hostJsonVersion = hostConfigObject["version"]?.Value<string>();
@@ -191,7 +192,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                 return hostConfigObject;
             }
 
-            internal JObject LoadHostConfig(string configFilePath)
+            internal async Task<JObject> LoadHostConfigAsync(string configFilePath)
             {
                 using (_metricsLogger.LatencyEvent(MetricEventNames.LoadHostConfiguration))
                 {
@@ -210,25 +211,25 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                         // if no file exists we default the config
                         _logger.HostConfigNotFound();
 
-                        hostConfigObject = GetDefaultHostConfigObject();
+                        hostConfigObject = await GetDefaultHostConfigObjectAsync();
                         string bundleId = _configurationSource.Environment.IsLogicApp() ?
                                             ScriptConstants.WorkFlowExtensionBundleId :
                                             ScriptConstants.DefaultExtensionBundleId;
 
-                        hostConfigObject = TryAddBundleConfiguration(hostConfigObject, bundleId);
+                        hostConfigObject = await TryAddBundleConfigurationAsync(hostConfigObject, bundleId);
                         // Add bundle configuration if no file exists and file system is not read only
-                        TryWriteHostJson(configFilePath, hostConfigObject);
+                        await TryWriteHostJsonAsync(configFilePath, hostConfigObject);
                     }
 
                     return hostConfigObject;
                 }
             }
 
-            private JObject GetDefaultHostConfigObject()
+            private async Task<JObject> GetDefaultHostConfigObjectAsync()
             {
                 var hostJsonJObj = JObject.Parse("{'version': '2.0'}");
                 if (string.Equals(_configurationSource.Environment.GetEnvironmentVariable(RpcWorkerConstants.FunctionWorkerRuntimeSettingName), "powershell", StringComparison.InvariantCultureIgnoreCase)
-                    && !_configurationSource.Environment.IsFileSystemReadOnly())
+                    && !await _configurationSource.Environment.IsFileSystemReadOnlyAsync())
                 {
                     hostJsonJObj.Add("managedDependency", JToken.Parse("{'Enabled': true}"));
                 }
@@ -236,9 +237,9 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                 return hostJsonJObj;
             }
 
-            private void TryWriteHostJson(string filePath, JObject content)
+            private async Task TryWriteHostJsonAsync(string filePath, JObject content)
             {
-                if (!_configurationSource.Environment.IsFileSystemReadOnly())
+                if (!await _configurationSource.Environment.IsFileSystemReadOnlyAsync())
                 {
                     try
                     {
@@ -255,9 +256,9 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
                 }
             }
 
-            private JObject TryAddBundleConfiguration(JObject content, string bundleId)
+            private async Task<JObject> TryAddBundleConfigurationAsync(JObject content, string bundleId)
             {
-                if (!_configurationSource.Environment.IsFileSystemReadOnly())
+                if (!await _configurationSource.Environment.IsFileSystemReadOnlyAsync())
                 {
                     string bundleConfiguration = "{ 'id': '" + bundleId + "', 'version': '[2.*, 3.0.0)'}";
                     content.Add("extensionBundle", JToken.Parse(bundleConfiguration));

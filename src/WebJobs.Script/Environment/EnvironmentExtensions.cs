@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using static Microsoft.Azure.WebJobs.Script.EnvironmentSettingNames;
 
 namespace Microsoft.Azure.WebJobs.Script
@@ -77,22 +78,34 @@ namespace Microsoft.Azure.WebJobs.Script
             return !string.IsNullOrEmpty(environment.GetEnvironmentVariable(RemoteDebuggingPort));
         }
 
-        public static bool IsZipDeployment(this IEnvironment environment, bool validate = true)
+        public static async Task<bool> IsZipDeploymentAsync(this IEnvironment environment, bool validate = true)
         {
             // Run From Package app setting exists
             if (validate)
             {
-                return IsValidZipSetting(environment.GetEnvironmentVariable(AzureWebsiteZipDeployment)) ||
+                if (IsValidZipSetting(environment.GetEnvironmentVariable(AzureWebsiteZipDeployment)) ||
                     IsValidZipSetting(environment.GetEnvironmentVariable(AzureWebsiteAltZipDeployment)) ||
-                    IsValidZipSetting(environment.GetEnvironmentVariable(AzureWebsiteRunFromPackage)) ||
-                    IsValidZipUrl(environment.GetEnvironmentVariable(ScmRunFromPackage));
+                    IsValidZipSetting(environment.GetEnvironmentVariable(AzureWebsiteRunFromPackage)))
+                {
+                    return true;
+                }
+
+                // SCM_RUN_FROM_PACKAGE is only used in Linux Consumption and it is always set when creating an app, even when not used.
+                // For a deployment to be a zip deployment, the setting needs to be actually used, meaning the blob exists.
+                string blobUri = environment.GetEnvironmentVariable(ScmRunFromPackage);
+                return IsValidZipUrl(blobUri) && await Utility.BlobExistsAsync(blobUri);
             }
             else
             {
-                return !string.IsNullOrEmpty(environment.GetEnvironmentVariable(AzureWebsiteZipDeployment)) ||
+                if (!string.IsNullOrEmpty(environment.GetEnvironmentVariable(AzureWebsiteZipDeployment)) ||
                     !string.IsNullOrEmpty(environment.GetEnvironmentVariable(AzureWebsiteAltZipDeployment)) ||
-                    !string.IsNullOrEmpty(environment.GetEnvironmentVariable(AzureWebsiteRunFromPackage)) ||
-                    !string.IsNullOrEmpty(environment.GetEnvironmentVariable(ScmRunFromPackage));
+                    !string.IsNullOrEmpty(environment.GetEnvironmentVariable(AzureWebsiteRunFromPackage)))
+                {
+                    return true;
+                }
+
+                string blobUri = environment.GetEnvironmentVariable(ScmRunFromPackage);
+                return !string.IsNullOrEmpty(blobUri) && await Utility.BlobExistsAsync(blobUri);
             }
         }
 
@@ -165,9 +178,9 @@ namespace Microsoft.Azure.WebJobs.Script
             return false;
         }
 
-        public static bool IsFileSystemReadOnly(this IEnvironment environment)
+        public static async Task<bool> IsFileSystemReadOnlyAsync(this IEnvironment environment)
         {
-            return environment.IsZipDeployment();
+            return await environment.IsZipDeploymentAsync();
         }
 
         /// <summary>

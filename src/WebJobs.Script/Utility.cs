@@ -22,6 +22,7 @@ using Microsoft.Azure.WebJobs.Script.Diagnostics.Extensions;
 using Microsoft.Azure.WebJobs.Script.Workers.Rpc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -705,6 +706,20 @@ namespace Microsoft.Azure.WebJobs.Script
                 return true;
             }
             return false;
+        }
+
+        public static async Task<bool> BlobExistsAsync(string blobUri)
+        {
+            try
+            {
+                CloudBlockBlob blob = new CloudBlockBlob(new Uri(blobUri));
+                return await blob.ExistsAsync();
+            }
+            catch (Exception e)
+            {
+                // logger.LogError(e, $"Failed to check if zip url blob exists");
+                throw;
+            }
         }
 
         public static void ExecuteAfterDelay(Action targetAction, TimeSpan delay, CancellationToken cancellationToken = default)

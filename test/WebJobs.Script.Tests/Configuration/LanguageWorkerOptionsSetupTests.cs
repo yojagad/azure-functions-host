@@ -29,7 +29,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             }
             LanguageWorkerOptionsSetup setup = new LanguageWorkerOptionsSetup(configuration, NullLoggerFactory.Instance, testEnvironment, new TestMetricsLogger());
             LanguageWorkerOptions options = new LanguageWorkerOptions();
-            setup.Configure(options);
+            setup.ConfigureAsync(options);
             if (string.IsNullOrEmpty(workerRuntime))
             {
                 Assert.Equal(4, options.WorkerConfigs.Count);

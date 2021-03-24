@@ -57,7 +57,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.ManagedDependencies
             var managedDependencyOptions = new ManagedDependencyOptions();
             var configuration = BuildHostJsonConfiguration();
             ManagedDependencyOptionsSetup managedDependencyOptionsSetup = new ManagedDependencyOptionsSetup(configuration);
-            managedDependencyOptionsSetup.Configure(managedDependencyOptions);
+            managedDependencyOptionsSetup.ConfigureAsync(managedDependencyOptions);
             Assert.True(managedDependencyOptions.Enabled == false);
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.ManagedDependencies
             var managedDependencyOptions = new ManagedDependencyOptions();
             var configuration = BuildHostJsonConfiguration();
             ManagedDependencyOptionsSetup managedDependencyOptionsSetup = new ManagedDependencyOptionsSetup(configuration);
-            managedDependencyOptionsSetup.Configure(managedDependencyOptions);
+            managedDependencyOptionsSetup.ConfigureAsync(managedDependencyOptions);
             if (managedDependencyOptions.Enabled)
             {
                 Assert.True(true);
