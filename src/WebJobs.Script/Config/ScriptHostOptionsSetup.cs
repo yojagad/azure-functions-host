@@ -26,7 +26,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             _applicationHostOptions = applicationHostOptions;
         }
 
-        public async Task ConfigureAsync(ScriptJobHostOptions options)
+        public void Configure(ScriptJobHostOptions options)
         {
             // Add the standard built in watched directories set to any the user may have specified
             options.WatchDirectories.Add("node_modules");
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
             // If we have a read only file system, override any configuration and
             // disable file watching
-            if (await _environment.IsFileSystemReadOnlyAsync())
+            if (_environment.IsFileSystemReadOnlyAsync().GetAwaiter().GetResult())
             {
                 options.FileWatchingEnabled = false;
             }

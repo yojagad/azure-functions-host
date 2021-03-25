@@ -70,7 +70,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
             public override void Load()
             {
-                JObject hostJson = await LoadHostConfigurationFileAsync();
+                JObject hostJson = LoadHostConfigurationFile();
                 ProcessObject(hostJson);
             }
 
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             /// <summary>
             /// Read and apply host.json configuration.
             /// </summary>
-            private async Task<JObject> LoadHostConfigurationFileAsync()
+            private JObject LoadHostConfigurationFile()
             {
                 using (_metricsLogger.LatencyEvent(MetricEventNames.LoadHostConfigurationSource))
                 {
@@ -144,8 +144,8 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
 
                     ScriptApplicationHostOptions options = _configurationSource.HostOptions;
                     string hostFilePath = Path.Combine(options.ScriptPath, ScriptConstants.HostMetadataFileName);
-                    JObject hostConfigObject = await LoadHostConfigAsync(hostFilePath);
-                    hostConfigObject = await InitializeHostConfigAsync(hostFilePath, hostConfigObject);
+                    JObject hostConfigObject = LoadHostConfigAsync(hostFilePath).GetAwaiter().GetResult();
+                    hostConfigObject = InitializeHostConfigAsync(hostFilePath, hostConfigObject).GetAwaiter().GetResult();
                     string sanitizedJson = SanitizeHostJson(hostConfigObject);
 
                     _logger.HostConfigApplied();

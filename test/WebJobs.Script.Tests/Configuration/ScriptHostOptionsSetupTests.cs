@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Script.Configuration;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
     public class ScriptHostOptionsSetupTests
     {
         [Fact]
-        public async System.Threading.Tasks.Task Configure_FileWatchingAsync()
+        public void Configure_FileWatching()
         {
             var settings = new Dictionary<string, string>
             {
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             // Validate default (this should be in another test - migrated here for now)
             Assert.True(options.FileWatchingEnabled);
 
-            await setup.ConfigureAsync(options);
+            setup.Configure(options);
 
             Assert.True(options.FileWatchingEnabled);
             Assert.Equal(1, options.WatchDirectories.Count);
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             setup = CreateSetupWithConfiguration(settings);
 
             options = new ScriptJobHostOptions();
-            await setup.ConfigureAsync(options);
+            setup.Configure(options);
 
             Assert.False(options.FileWatchingEnabled);
 
@@ -60,7 +61,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             setup = CreateSetupWithConfiguration(settings);
 
             options = new ScriptJobHostOptions();
-            await setup.ConfigureAsync(options);
+            setup.Configure(options);
 
             Assert.True(options.FileWatchingEnabled);
             Assert.Equal(3, options.WatchDirectories.Count);
@@ -331,7 +332,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             var options = new ScriptJobHostOptions();
 
-            await setup.ConfigureAsync(options);
+            await setup.Configure(options);
 
             return options;
         }
