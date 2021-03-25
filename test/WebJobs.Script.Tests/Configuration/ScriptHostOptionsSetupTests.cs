@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Script.Configuration;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Microsoft.Extensions.Configuration;
@@ -106,21 +105,21 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task Configure_AppliesDefaults_IfDynamicAsync()
+        public void Configure_AppliesDefaults_IfDynamic()
         {
             var settings = new Dictionary<string, string>();
 
             var environment = new TestEnvironment();
             environment.SetEnvironmentVariable(EnvironmentSettingNames.AzureWebsiteSku, "Dynamic");
 
-            ScriptJobHostOptions options = await GetConfiguredOptionsAsync(settings, environment);
+            ScriptJobHostOptions options = GetConfiguredOptions(settings, environment);
 
             Assert.Equal(ScriptHostOptionsSetup.DefaultFunctionTimeoutDynamic, options.FunctionTimeout);
 
             // When functionTimeout is set as null
             settings.Add(ConfigurationPath.Combine(ConfigurationSectionNames.JobHost, "functionTimeout"), string.Empty);
 
-            options = await GetConfiguredOptionsAsync(settings, environment);
+            options = GetConfiguredOptions(settings, environment);
             Assert.Equal(ScriptHostOptionsSetup.DefaultFunctionTimeoutDynamic, options.FunctionTimeout);
 
             // TODO: DI Need to ensure JobHostOptions is correctly configured
@@ -131,14 +130,14 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task Configure_AppliesTimeoutAsync()
+        public void Configure_AppliesTimeout()
         {
             var settings = new Dictionary<string, string>
             {
                 { ConfigurationPath.Combine(ConfigurationSectionNames.JobHost, "functionTimeout"), "00:00:30" }
             };
 
-            ScriptJobHostOptions options = await GetConfiguredOptionsAsync(settings);
+            ScriptJobHostOptions options = GetConfiguredOptions(settings);
 
             Assert.Equal(TimeSpan.FromSeconds(30), options.FunctionTimeout);
         }
@@ -162,20 +161,20 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             };
             if (string.IsNullOrEmpty(delayInterval) || string.IsNullOrEmpty(maxRetryCount))
             {
-                Assert.Throws<ArgumentNullException>(() => GetConfiguredOptionsAsync(settings));
+                Assert.Throws<ArgumentNullException>(() => GetConfiguredOptions(settings));
                 return;
             }
             if (throwsError)
             {
                 if (int.Parse(maxRetryCount) <= 0)
                 {
-                    Assert.Throws<ArgumentOutOfRangeException>(() => GetConfiguredOptionsAsync(settings));
+                    Assert.Throws<ArgumentOutOfRangeException>(() => GetConfiguredOptions(settings));
                     return;
                 }
-                Assert.Throws<InvalidOperationException>(() => GetConfiguredOptionsAsync(settings));
+                Assert.Throws<InvalidOperationException>(() => GetConfiguredOptions(settings));
                 return;
             }
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
             Assert.Equal(RetryStrategy.FixedDelay, options.Retry.Strategy);
             Assert.Equal(int.Parse(maxRetryCount), options.Retry.MaxRetryCount.Value);
             Assert.Equal(TimeSpan.Parse(delayInterval), options.Retry.DelayInterval);
@@ -198,7 +197,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             };
             if (string.IsNullOrEmpty(minimumInterval) || string.IsNullOrEmpty(maximumInterval))
             {
-                Assert.Throws<ArgumentNullException>(() => GetConfiguredOptionsAsync(settings));
+                Assert.Throws<ArgumentNullException>(() => GetConfiguredOptions(settings));
                 return;
             }
             var minIntervalTimeSpan = TimeSpan.Parse(minimumInterval);
@@ -207,13 +206,13 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             {
                 if (minIntervalTimeSpan > maxIntervalTimeSpan)
                 {
-                    Assert.Throws<ArgumentException>(() => GetConfiguredOptionsAsync(settings));
+                    Assert.Throws<ArgumentException>(() => GetConfiguredOptions(settings));
                     return;
                 }
-                Assert.Throws<InvalidOperationException>(() => GetConfiguredOptionsAsync(settings));
+                Assert.Throws<InvalidOperationException>(() => GetConfiguredOptions(settings));
                 return;
             }
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
             Assert.Equal(RetryStrategy.ExponentialBackoff, options.Retry.Strategy);
             Assert.Equal(int.Parse(maxRetryCount), options.Retry.MaxRetryCount);
             Assert.Equal(minIntervalTimeSpan, options.Retry.MinimumInterval);
@@ -223,7 +222,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
         [Fact]
         public void Configure_TimeoutDefaultsNull_IfNotDynamic()
         {
-            var options = GetConfiguredOptionsAsync(new Dictionary<string, string>());
+            var options = GetConfiguredOptions(new Dictionary<string, string>());
             Assert.Equal(ScriptHostOptionsSetup.DefaultFunctionTimeout, options.FunctionTimeout);
 
             // When functionTimeout is set as null
@@ -232,7 +231,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
                 { ConfigurationPath.Combine(ConfigurationSectionNames.JobHost, "functionTimeout"), string.Empty }
             };
 
-            options = GetConfiguredOptionsAsync(settings);
+            options = GetConfiguredOptions(settings);
             Assert.Equal(ScriptHostOptionsSetup.DefaultFunctionTimeout, options.FunctionTimeout);
         }
 
@@ -246,7 +245,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
                 { configPath, timeout.ToString() }
             };
 
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
             Assert.Equal(timeout, options.FunctionTimeout);
         }
 
@@ -258,7 +257,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
                 { ConfigurationPath.Combine(ConfigurationSectionNames.JobHost, "functionTimeout"), "-1" }
             };
 
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
             Assert.Equal(null, options.FunctionTimeout);
         }
 
@@ -274,16 +273,16 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             var environment = new TestEnvironment();
             environment.SetEnvironmentVariable(EnvironmentSettingNames.AzureWebsiteSku, "Dynamic");
 
-            var ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptionsAsync(settings, environment));
+            var ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptions(settings, environment));
             var expectedMessage = "FunctionTimeout must be greater than 00:00:01 and less than 00:10:00.";
             Assert.Equal(expectedMessage, ex.Message);
 
             settings[configPath] = (ScriptHostOptionsSetup.MinFunctionTimeout - TimeSpan.FromSeconds(1)).ToString();
-            ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptionsAsync(settings, environment));
+            ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptions(settings, environment));
             Assert.Equal(expectedMessage, ex.Message);
 
             settings[configPath] = "-1";
-            ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptionsAsync(settings, environment));
+            ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptions(settings, environment));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -296,7 +295,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
                 { configPath, (ScriptHostOptionsSetup.MinFunctionTimeout - TimeSpan.FromSeconds(1)).ToString() }
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptionsAsync(settings));
+            var ex = Assert.Throws<ArgumentException>(() => GetConfiguredOptions(settings));
             var expectedMessage = $"FunctionTimeout must be greater than 00:00:01 and less than {TimeSpan.MaxValue}.";
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -305,7 +304,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
         public void Configure_Default_AppliesFileLoggingMode()
         {
             var settings = new Dictionary<string, string>();
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
 
             Assert.Equal(FileLoggingMode.DebugOnly, options.FileLoggingMode);
         }
@@ -321,18 +320,18 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
                 { ConfigurationPath.Combine(ConfigurationSectionNames.JobHost, ConfigurationSectionNames.Logging, "fileLoggingMode"), setting }
             };
 
-            var options = GetConfiguredOptionsAsync(settings);
+            var options = GetConfiguredOptions(settings);
 
             Assert.Equal(expectedMode, options.FileLoggingMode);
         }
 
-        private async System.Threading.Tasks.Task<ScriptJobHostOptions> GetConfiguredOptionsAsync(Dictionary<string, string> settings, IEnvironment environment = null)
+        private ScriptJobHostOptions GetConfiguredOptions(Dictionary<string, string> settings, IEnvironment environment = null)
         {
             ScriptHostOptionsSetup setup = CreateSetupWithConfiguration(settings, environment);
 
             var options = new ScriptJobHostOptions();
 
-            await setup.Configure(options);
+            setup.Configure(options);
 
             return options;
         }

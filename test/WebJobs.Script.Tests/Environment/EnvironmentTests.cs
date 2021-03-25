@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Xunit;
 using static Microsoft.Azure.WebJobs.Script.EnvironmentSettingNames;
 
@@ -157,7 +158,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
         [InlineData("functionapp.zip", false)]
         [InlineData("0", false)]
         [InlineData("", false)]
-        public async System.Threading.Tasks.Task IsZipDeployment_CorrectlyValidatesSettingAsync(string appSettingValue, bool expectedOutcome)
+        public async Task IsZipDeployment_CorrectlyValidatesSettingAsync(string appSettingValue, bool expectedOutcome)
         {
             var zipSettings = new string[]
             {
