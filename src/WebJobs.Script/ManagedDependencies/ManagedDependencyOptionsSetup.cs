@@ -20,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Script.ManagedDependencies
             _configuration = configuration;
         }
 
-        public void ConfigureAsync(ManagedDependencyOptions options)
+        public void Configure(ManagedDependencyOptions options)
         {
             IConfigurationSection jobHostSection = _configuration.GetSection(ConfigurationSectionNames.JobHost);
             var managedDependencySection = jobHostSection.GetSection(ConfigurationSectionNames.ManagedDependency);

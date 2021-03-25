@@ -21,7 +21,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public void ConfigureAsync(JobHostOptions options)
+        public void Configure(JobHostOptions options)
         {
             // TODO: Why isn't this code doing anything?
             IConfigurationSection jobHostSection = _configuration.GetSection(ConfigurationSectionNames.JobHost);

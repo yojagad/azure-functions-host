@@ -18,7 +18,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _environment = environment;
         }
 
-        public void ConfigureAsync(HttpOptions options)
+        public void Configure(HttpOptions options)
         {
             if (_environment.IsWindowsConsumption())
             {

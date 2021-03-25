@@ -20,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
             ScriptApplicationHostOptionsSetup setup = CreateSetupWithConfiguration(true);
 
             var options = new ScriptApplicationHostOptions();
-            setup.ConfigureAsync(options);
+            setup.Configure(options);
 
             Assert.EndsWith(@"functions\standby\logs", options.LogPath);
             Assert.EndsWith(@"functions\standby\wwwroot", options.ScriptPath);

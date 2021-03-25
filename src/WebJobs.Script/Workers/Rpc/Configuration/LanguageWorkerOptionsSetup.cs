@@ -24,7 +24,7 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Rpc
             _metricsLogger = metricsLogger;
         }
 
-        public void ConfigureAsync(LanguageWorkerOptions options)
+        public void Configure(LanguageWorkerOptions options)
         {
             string workerRuntime = _environment.GetEnvironmentVariable(RpcWorkerConstants.FunctionWorkerRuntimeSettingName);
             if (!string.IsNullOrEmpty(workerRuntime) && workerRuntime.Equals(RpcWorkerConstants.DotNetLanguageWorkerName, System.StringComparison.OrdinalIgnoreCase))

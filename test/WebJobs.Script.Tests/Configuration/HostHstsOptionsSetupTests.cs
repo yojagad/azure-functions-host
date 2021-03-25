@@ -65,7 +65,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             HostHstsOptionsSetup setup = new HostHstsOptionsSetup(configuration);
             HostHstsOptions options = new HostHstsOptions();
-            var ex = Record.Exception(() => setup.ConfigureAsync(options));
+            var ex = Record.Exception(() => setup.Configure(options));
             Assert.Null(ex);
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             HostHstsOptionsSetup setup = new HostHstsOptionsSetup(configuration);
             HostHstsOptions options = new HostHstsOptions();
-            setup.ConfigureAsync(options);
+            setup.Configure(options);
             Assert.Equal(options.MaxAge, new TimeSpan(10, 0, 0, 0));
         }
 

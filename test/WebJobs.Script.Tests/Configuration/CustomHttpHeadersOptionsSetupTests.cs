@@ -65,7 +65,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             CustomHttpHeadersOptionsSetup setup = new CustomHttpHeadersOptionsSetup(configuration);
             CustomHttpHeadersOptions options = new CustomHttpHeadersOptions();
-            var ex = Record.Exception(() => setup.ConfigureAsync(options));
+            var ex = Record.Exception(() => setup.Configure(options));
             Assert.Null(ex);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Configuration
 
             CustomHttpHeadersOptionsSetup setup = new CustomHttpHeadersOptionsSetup(configuration);
             CustomHttpHeadersOptions options = new CustomHttpHeadersOptions();
-            setup.ConfigureAsync(options);
+            setup.Configure(options);
             Assert.Equal(new Dictionary<string, string>() { { "X-Content-Type-Options", "nosniff" } }, options);
         }
 

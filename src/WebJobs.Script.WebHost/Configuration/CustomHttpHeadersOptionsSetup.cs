@@ -16,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _configuration = configuration;
         }
 
-        public void ConfigureAsync(CustomHttpHeadersOptions options)
+        public void Configure(CustomHttpHeadersOptions options)
         {
             IConfigurationSection jobHostSection = _configuration.GetSection(ConfigurationSectionNames.JobHost);
             var httpGlobalSection = jobHostSection.GetSection(ConfigurationSectionNames.CustomHttpHeaders);

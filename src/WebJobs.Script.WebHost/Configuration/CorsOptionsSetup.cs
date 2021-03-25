@@ -21,7 +21,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _hostCorsOptions = hostCorsOptions;
         }
 
-        public void ConfigureAsync(CorsOptions options)
+        public void Configure(CorsOptions options)
         {
             if (_env.IsLinuxConsumption())
             {

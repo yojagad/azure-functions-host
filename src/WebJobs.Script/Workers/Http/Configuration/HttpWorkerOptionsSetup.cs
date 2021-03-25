@@ -32,7 +32,7 @@ namespace Microsoft.Azure.WebJobs.Script.Workers.Http
             _logger = loggerFactory.CreateLogger<HttpWorkerOptionsSetup>();
         }
 
-        public void ConfigureAsync(HttpWorkerOptions options)
+        public void Configure(HttpWorkerOptions options)
         {
             IConfigurationSection jobHostSection = _configuration.GetSection(ConfigurationSectionNames.JobHost);
             var httpWorkerSection = jobHostSection.GetSection(ConfigurationSectionNames.HttpWorker);

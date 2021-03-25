@@ -14,7 +14,7 @@ namespace Microsoft.Azure.WebJobs.Script.Configuration
             _environment = environment;
         }
 
-        public void ConfigureAsync(AppServiceOptions options)
+        public void Configure(AppServiceOptions options)
         {
             options.AppName = _environment.GetAzureWebsiteUniqueSlotName() ?? string.Empty;
             options.SubscriptionId = _environment.GetSubscriptionId() ?? string.Empty;

@@ -17,7 +17,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             _configuration = configuration;
         }
 
-        public void ConfigureAsync(HostHstsOptions options)
+        public void Configure(HostHstsOptions options)
         {
             IConfigurationSection jobHostSection = _configuration.GetSection(ConfigurationSectionNames.JobHost);
             var hstsSection = jobHostSection.GetSection(ConfigurationSectionNames.Hsts);
