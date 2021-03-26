@@ -2,15 +2,12 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs.Script.Diagnostics.Extensions;
+using Microsoft.Azure.WebJobs.Host.Scale;
 using Microsoft.Azure.WebJobs.Script.Extensions;
 using Microsoft.Azure.WebJobs.Script.Workers;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,11 +22,10 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
         private const int MinSampleCount = 5;
         private readonly IEnvironment _environment;
         private readonly IOptions<HostHealthMonitorOptions> _healthMonitorOptions;
-        private readonly ProcessMonitor _processMonitor;
         private readonly IServiceProvider _serviceProvider;
         private bool _disposed = false;
 
-        public HostPerformanceManager(IEnvironment environment, IOptions<HostHealthMonitorOptions> healthMonitorOptions, IServiceProvider serviceProvider, ProcessMonitor processMonitor = null)
+        public HostPerformanceManager(IEnvironment environment, IOptions<HostHealthMonitorOptions> healthMonitorOptions, IServiceProvider serviceProvider)
         {
             if (environment == null)
             {
@@ -43,9 +39,6 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
             _environment = environment;
             _healthMonitorOptions = healthMonitorOptions;
             _serviceProvider = serviceProvider;
-            _processMonitor = processMonitor ?? new ProcessMonitor(Process.GetCurrentProcess(), environment);
-
-            _processMonitor.Start();
         }
 
         /// <summary>
@@ -66,13 +59,12 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
         /// Check both sandbox enforced performance counters as well as process level thresholds
         /// like CPU, memory, etc.
         /// </summary>
-        public virtual async Task<bool> IsUnderHighLoadAsync(Collection<string> exceededCounters = null, ILogger logger = null)
+        public virtual bool IsUnderHighLoad(Collection<string> exceededCounters = null, ILogger logger = null)
         {
-            return PerformanceCountersExceeded(exceededCounters, logger) ||
-                await ProcessThresholdsExceeded(exceededCounters, logger);
+            return PerformanceCountersExceeded(logger: logger) || ProcessThresholdsExceeded(logger: logger);
         }
 
-        public async Task<IActionResult> TryHandleHealthPingAsync(HttpRequest request, ILogger logger)
+        public IActionResult TryHandleHealthPing(HttpRequest request, ILogger logger)
         {
             var healthPingEnabled = _environment.GetEnvironmentVariableOrDefault(EnvironmentSettingNames.HealthPingEnabled, "1");
             if (healthPingEnabled.Equals("0"))
@@ -102,7 +94,7 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
             {
                 // check host + worker health
                 int statusCode = (int)HttpStatusCode.OK;
-                if (await IsUnderHighLoadAsync(logger: logger))
+                if (IsUnderHighLoad(logger: logger))
                 {
                     statusCode = 429;
                 }
@@ -113,59 +105,16 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
             return null;
         }
 
-        internal async Task<bool> ProcessThresholdsExceeded(Collection<string> exceededCounters = null, ILogger logger = null)
+        internal bool ProcessThresholdsExceeded(ILogger logger = null)
         {
-            var hostProcessStats = _processMonitor.GetStats();
-            if (hostProcessStats.CpuLoadHistory.Any())
+            // ConcurrencyManager internally consults various throttle providers that check
+            // Host/Worker CPU/Memory health, as well as OOP worker channel health.
+            // ConcurrencyManager is a ScriptHost level service, so may not be available if the host
+            // is not running.
+            var concurrencyManager = _serviceProvider.GetHostServiceOrNull<ConcurrencyManager>();
+            if (concurrencyManager != null)
             {
-                string formattedLoadHistory = string.Join(",", hostProcessStats.CpuLoadHistory);
-                logger?.HostProcessCpuStats(_environment.GetEffectiveCoresCount(), formattedLoadHistory, Math.Round(hostProcessStats.CpuLoadHistory.Average()), Math.Round(hostProcessStats.CpuLoadHistory.Max()));
-            }
-
-            double workersAverageCpuTotal = 0;
-            var dispatcher = GetDispatcherAsync();
-            if (dispatcher != null)
-            {
-                // If OOP, check worker stats
-                var workerStatuses = await dispatcher.GetWorkerStatusesAsync();
-                if (workerStatuses.All(p => p.Value.ProcessStats.CpuLoadHistory.Count() > MinSampleCount))
-                {
-                    // first compute the average CPU load for each worker
-                    var averageWorkerCpuStats = new List<double>();
-                    foreach (var currentStatus in workerStatuses)
-                    {
-                        // take the last N samples
-                        var workerProcessStats = currentStatus.Value.ProcessStats;
-                        int currWorkerProcessCpuStatsCount = workerProcessStats.CpuLoadHistory.Count();
-                        var currWorkerCpuStats = workerProcessStats.CpuLoadHistory.Skip(currWorkerProcessCpuStatsCount - MinSampleCount).Take(MinSampleCount).Average();
-                        averageWorkerCpuStats.Add(currWorkerCpuStats);
-                    }
-
-                    // compute the final average CPU total across all workers
-                    workersAverageCpuTotal = averageWorkerCpuStats.Sum();
-                }
-            }
-
-            // calculate the aggregate load of host + workers (if OOP)
-            int hostProcessCpuStatsCount = hostProcessStats.CpuLoadHistory.Count();
-            if (hostProcessCpuStatsCount > MinSampleCount)
-            {
-                // compute the aggregate average CPU usage for host + workers for the last MinSampleCount samples
-                var hostAverageCpu = hostProcessStats.CpuLoadHistory.Skip(hostProcessCpuStatsCount - MinSampleCount).Take(MinSampleCount).Average();
-                var aggregateAverage = Math.Round(hostAverageCpu + workersAverageCpuTotal);
-                logger?.HostAggregateCpuLoad(aggregateAverage);
-
-                // if the average is above our threshold, return true (we're overloaded)
-                var adjustedThreshold = _healthMonitorOptions.Value.CounterThreshold * 100;
-                if (aggregateAverage >= adjustedThreshold)
-                {
-                    logger?.HostCpuThresholdExceeded(aggregateAverage, adjustedThreshold);
-                    if (exceededCounters != null)
-                    {
-                        exceededCounters.Add("CPU");
-                    }
-                    return true;
-                }
+                return concurrencyManager.IsThrottleEnabled();
             }
 
             return false;
@@ -251,7 +200,6 @@ namespace Microsoft.Azure.WebJobs.Script.Scale
             {
                 if (disposing)
                 {
-                    _processMonitor?.Dispose();
                 }
 
                 _disposed = true;

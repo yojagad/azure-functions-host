@@ -120,9 +120,9 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Controllers
         [HttpPost]
         [Route("admin/host/ping")]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-        public async Task<IActionResult> Ping([FromServices] IScriptHostManager scriptHostManager)
+        public IActionResult Ping([FromServices] IScriptHostManager scriptHostManager)
         {
-            var result = await _performanceManager.TryHandleHealthPingAsync(HttpContext.Request, _logger);
+            var result = _performanceManager.TryHandleHealthPing(HttpContext.Request, _logger);
             if (result != null)
             {
                 return result;

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Azure.WebJobs.Host.Executors;
 using Microsoft.Azure.WebJobs.Host.Loggers;
+using Microsoft.Azure.WebJobs.Host.Scale;
 using Microsoft.Azure.WebJobs.Host.Timers;
 using Microsoft.Azure.WebJobs.Script.ChangeAnalysis;
 using Microsoft.Azure.WebJobs.Script.Configuration;
@@ -116,6 +117,8 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                         services.AddSingleton<IChangeAnalysisStateProvider, BlobChangeAnalysisStateProvider>();
                         services.AddSingleton<IHostedService, ChangeAnalysisService>();
                     }
+
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrencyThrottleProvider, WorkerChannelThrottleProvider>());
 
                     // Make sure the registered IHostIdProvider is used
                     IHostIdProvider provider = rootServiceProvider.GetService<IHostIdProvider>();

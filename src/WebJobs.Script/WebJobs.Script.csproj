@@ -44,7 +44,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.NodeJsWorker" Version="2.1.1" />
     <PackageReference Include="Microsoft.Azure.Functions.PowerShellWorker.PS6" Version="3.0.630" />
     <PackageReference Include="Microsoft.Azure.Functions.PowerShellWorker.PS7" Version="3.0.705" />
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.27" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.3" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.10" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Logging.ApplicationInsights" Version="3.0.27" />
@@ -74,6 +73,10 @@
     <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.1" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\azure-webjobs-sdk\src\Microsoft.Azure.WebJobs.Host\WebJobs.Host.csproj" />
+    <ProjectReference Include="..\..\..\azure-webjobs-sdk\src\Microsoft.Azure.WebJobs\WebJobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
