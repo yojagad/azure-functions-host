@@ -2,6 +2,7 @@
 <!-- Please add your release notes in the following format:
 - My change description (#PR)
 -->
+- Capture diagnostic events
 
 - Added a feature flag to opt out of the default behavior where the host sets the environment name to `Development` when running in debug mode. To disable the behavior, set the app setting: `AzureWebJobsFeatureFlags` to `DisableDevModeInDebug`
 - Reorder CORS and EasyAuth middleware to prevent EasyAuth from blocking CORS requests (#7315)
