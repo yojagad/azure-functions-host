@@ -44,12 +44,6 @@ namespace Microsoft.Azure.WebJobs.Script
             _leaseTimeout = coordinatorOptions.Value.LeaseTimeout;
             _hostIdProvider = hostIdProvider;
             _websiteInstanceId = settingsManager.AzureWebsiteInstanceId;
-
-            if (environment.IsKubernetesManagedHosting())
-            {
-                _lockManager = new KubernetesDistributedLockManager(loggerFactory);
-            }
-
             _lockManager = lockManager;
 
             if (lockManager == null)

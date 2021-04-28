@@ -16,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Script
         private readonly ILogger _logger;
         private readonly KubernetesClient _kubernetesClient;
 
-        internal KubernetesDistributedLockManager(ILoggerFactory loggerFactory)
+        public KubernetesDistributedLockManager(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger(ScriptConstants.LogCategoryHostGeneral);
             _kubernetesClient = new KubernetesClient();
@@ -24,6 +24,7 @@ namespace Microsoft.Azure.WebJobs.Script
 
         public async Task<string> GetLockOwnerAsync(string account, string lockId, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("K8se: getlockownerasync");
             var response = await _kubernetesClient.GetLock(lockId);
             return response.Owner;
         }
@@ -44,6 +45,7 @@ namespace Microsoft.Azure.WebJobs.Script
 
         public async Task<IDistributedLock> TryLockAsync(string account, string lockId, string lockOwnerId, string proposedLeaseId, TimeSpan lockPeriod, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("K8se: Trylockasync");
             var kubernetesLock = await _kubernetesClient.TryAcquireLock(lockId, lockOwnerId, lockPeriod.ToString());
             if (string.IsNullOrEmpty(kubernetesLock.LockId))
             {
