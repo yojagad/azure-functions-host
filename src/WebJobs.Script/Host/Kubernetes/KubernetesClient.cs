@@ -26,7 +26,7 @@ namespace Microsoft.Azure.WebJobs.Script
             request.Method = HttpMethod.Get;
             request.RequestUri = GetRequestUri($"?name={lockName}");
             var response = await _httpClient.SendAsync(request);
-
+            response.EnsureSuccessStatusCode();
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
@@ -45,6 +45,7 @@ namespace Microsoft.Azure.WebJobs.Script
             };
 
             var response = await _httpClient.SendAsync(request);
+            Console.WriteLine($"K8se: TryAcquirelock response status code {response.StatusCode}");
             if (response.IsSuccessStatusCode)
             {
                 lockHandle.LockId = lockId;
