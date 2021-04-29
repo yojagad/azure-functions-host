@@ -38,10 +38,12 @@ namespace Microsoft.Azure.WebJobs.Script
         public async Task<KubernetesLockHandle> TryAcquireLock (string lockId, string ownerId, string lockPeriod)
         {
             var lockHandle = new KubernetesLockHandle();
+            var duration = TimeSpan.Parse(lockPeriod).TotalSeconds;
+
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&duration={lockPeriod}&renewDeadline=10"),
+                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&duration={duration}&renewDeadline=10"),
             };
 
             var response = await _httpClient.SendAsync(request);
