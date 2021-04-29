@@ -41,7 +41,7 @@ namespace Microsoft.Azure.WebJobs.Script
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&period={lockPeriod}&renewDeadline=10"),
+                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&duration={lockPeriod}&renewDeadline=10"),
             };
 
             var response = await _httpClient.SendAsync(request);
