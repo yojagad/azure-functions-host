@@ -46,10 +46,6 @@ namespace Microsoft.Azure.WebJobs.Script
                 throw new ArgumentNullException(nameof(lockId));
             }
 
-            if (string.IsNullOrEmpty(ownerId))
-            {
-                throw new ArgumentNullException(nameof(ownerId));
-            }
             var lockHandle = new KubernetesLockHandle();
 
             var request = new HttpRequestMessage()
