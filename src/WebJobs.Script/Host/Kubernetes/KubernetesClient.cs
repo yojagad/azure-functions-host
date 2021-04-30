@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -10,40 +11,51 @@ namespace Microsoft.Azure.WebJobs.Script
 {
     internal class KubernetesClient
     {
-        private const string HttpLeaderEndpointKey = "HTTP_LEADER_ENDPOINT";
         private readonly HttpClient _httpClient;
         private readonly string _httpLeaderEndpoint;
 
-        public KubernetesClient()
+        internal KubernetesClient(IEnvironment environment, HttpClient httpClient = null)
         {
-            _httpClient = new HttpClient();
-            _httpLeaderEndpoint = Environment.GetEnvironmentVariable(HttpLeaderEndpointKey);
+            _httpClient = httpClient ?? new HttpClient();
+            _httpLeaderEndpoint = environment.GetHttpLeaderEndpoint();
         }
 
-        public async Task<KubernetesLockResponse> GetLock(string lockName)
+        internal async Task<KubernetesLockHandle> GetLock(string lockName)
         {
-            var request = new HttpRequestMessage();
-            request.Method = HttpMethod.Get;
-            request.RequestUri = GetRequestUri($"?name={lockName}");
+            if (string.IsNullOrEmpty(lockName))
+            {
+                throw new ArgumentNullException(nameof(lockName));
+            }
+            var request = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Get,
+                RequestUri = GetRequestUri($"?name={lockName}")
+            };
+
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<KubernetesLockResponse>(responseString);
-            }
-            return new KubernetesLockResponse() { Owner = null };
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<KubernetesLockHandle>(responseString);
         }
 
-        public async Task<KubernetesLockHandle> TryAcquireLock (string lockId, string ownerId, string lockPeriod)
+        internal async Task<KubernetesLockHandle> TryAcquireLock (string lockId, string ownerId, TimeSpan lockPeriod, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(lockId))
+            {
+                throw new ArgumentNullException(nameof(lockId));
+            }
+
+            if (string.IsNullOrEmpty(ownerId))
+            {
+                throw new ArgumentNullException(nameof(ownerId));
+            }
             var lockHandle = new KubernetesLockHandle();
-            var duration = TimeSpan.Parse(lockPeriod).TotalSeconds;
 
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&duration={duration}&renewDeadline=10"),
+                RequestUri = GetRequestUri($"/acquire?name={lockId}&owner={ownerId}&duration={lockPeriod.TotalSeconds}&renewDeadline=10"),
             };
 
             var response = await _httpClient.SendAsync(request);
@@ -56,9 +68,17 @@ namespace Microsoft.Azure.WebJobs.Script
             return lockHandle;
         }
 
-        public async Task<HttpResponseMessage> ReleaseLock(string lockId, string ownerId)
+        internal async Task<HttpResponseMessage> ReleaseLock(string lockId, string ownerId)
         {
-            var lockHandle = new KubernetesLockHandle();
+            if (string.IsNullOrEmpty(lockId))
+            {
+                throw new ArgumentNullException(nameof(lockId));
+            }
+
+            if (string.IsNullOrEmpty(ownerId))
+            {
+                throw new ArgumentNullException(nameof(ownerId));
+            }
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
@@ -68,7 +88,7 @@ namespace Microsoft.Azure.WebJobs.Script
             return await _httpClient.SendAsync(request);
         }
 
-        private Uri GetRequestUri(string requestStem)
+        internal Uri GetRequestUri(string requestStem)
         {
             return new Uri($"{_httpLeaderEndpoint}/lock{requestStem}");
         }
