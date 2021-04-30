@@ -63,7 +63,7 @@ namespace Microsoft.Azure.WebJobs.Script
             if (response.IsSuccessStatusCode)
             {
                 lockHandle.LockId = lockId;
-                lockHandle.OwnerId = ownerId;
+                lockHandle.Owner = ownerId;
             }
             return lockHandle;
         }
