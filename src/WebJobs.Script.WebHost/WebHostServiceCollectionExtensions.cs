@@ -163,7 +163,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
             // Configuration
             services.ConfigureOptions<ScriptApplicationHostOptionsSetup>();
-            services.AddSingleton<IConfigureOptions<ScriptApplicationHostOptions>>(p =>
+            services.AddSingleton<IConfigureNamedOptions<ScriptApplicationHostOptions>>(p =>
             {
                 var environment = p.GetService<IEnvironment>();
                 if (environment.IsLinuxConsumption())

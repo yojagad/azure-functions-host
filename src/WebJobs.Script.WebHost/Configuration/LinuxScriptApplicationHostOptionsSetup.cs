@@ -9,19 +9,24 @@ using static Microsoft.Azure.WebJobs.Script.EnvironmentSettingNames;
 
 namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
 {
-    public class LinuxScriptApplicationHostOptionsSetup : IConfigureOptions<ScriptApplicationHostOptions>
+    public class LinuxScriptApplicationHostOptionsSetup : IConfigureNamedOptions<ScriptApplicationHostOptions>
     {
         private readonly IEnvironment _environment;
-        private static readonly IConfigureOptions<ScriptApplicationHostOptions> _instance = new NullSetup();
+        private static readonly IConfigureNamedOptions<ScriptApplicationHostOptions> _instance = new NullSetup();
 
         public LinuxScriptApplicationHostOptionsSetup(IEnvironment environment)
         {
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        internal static IConfigureOptions<ScriptApplicationHostOptions> NullInstance => _instance;
+        internal static IConfigureNamedOptions<ScriptApplicationHostOptions> NullInstance => _instance;
 
         public void Configure(ScriptApplicationHostOptions options)
+        {
+            Configure(null, options);
+        }
+
+        public void Configure(string name, ScriptApplicationHostOptions options)
         {
             options.IsFileSystemReadOnly = IsZipDeployment(options);
         }
@@ -81,8 +86,13 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Configuration
             }
         }
 
-        private class NullSetup : IConfigureOptions<ScriptApplicationHostOptions>
+        private class NullSetup : IConfigureNamedOptions<ScriptApplicationHostOptions>
         {
+            public void Configure(string name, ScriptApplicationHostOptions options)
+            {
+                Configure(null, options);
+            }
+
             public void Configure(ScriptApplicationHostOptions options)
             {
                 // Do nothing.

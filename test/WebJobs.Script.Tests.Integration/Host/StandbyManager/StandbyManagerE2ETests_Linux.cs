@@ -46,6 +46,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 { EnvironmentSettingNames.AzureWebsiteContainerReady, null },
                 { EnvironmentSettingNames.AzureWebsiteSku, "Dynamic" },
                 { EnvironmentSettingNames.AzureWebsiteZipDeployment, null },
+                { EnvironmentSettingNames.ScmRunFromPackage, null},
                 { "AzureWebEncryptionKey", "0F75CA46E7EBDD39E4CA6B074D1F9A5972B849A55F91A248" }
             };
 
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
             var environment = new Dictionary<string, string>()
                 {
-                    { EnvironmentSettingNames.AzureWebsiteZipDeployment, sasUri.ToString() },
+                    { EnvironmentSettingNames.ScmRunFromPackage, sasUri.ToString() },
                     { RpcWorkerConstants.FunctionWorkerRuntimeVersionSettingName, "~2" },
                     { RpcWorkerConstants.FunctionWorkerRuntimeSettingName, "node" }
                 };
